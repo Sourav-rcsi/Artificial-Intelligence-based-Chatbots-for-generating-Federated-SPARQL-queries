@@ -1,0 +1,16 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?drugLabel ?casNumber ?mass ?biotransformation
+WHERE {
+  SERVICE <http://drugbank.bio2rdf.org/sparql> {
+    ?drug a <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#drug> ;
+          rdfs:label ?drugLabel ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#casRegistryNumber> ?casNumber ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#mass> ?mass ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#affectedOrganism> "Humans and other mammals"@en ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#biotransformation> ?biotransformation .
+  }
+  SERVICE <http://kegg.bio2rdf.org/sparql> {
+    ?keggDrug <http://bio2rdf.org/kegg_vocabulary:xRef> ?casNumber ;
+              <http://bio2rdf.org/kegg_vocabulary:mass> ?mass .
+  }
+}

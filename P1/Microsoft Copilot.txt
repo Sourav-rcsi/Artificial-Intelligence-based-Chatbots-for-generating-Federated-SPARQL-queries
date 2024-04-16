@@ -1,0 +1,4 @@
+SELECT DISTINCT ?drug
+WHERE {
+  ?drug a <http://bio2rdf.org/drugbank_vocabulary:Drug> .
+}

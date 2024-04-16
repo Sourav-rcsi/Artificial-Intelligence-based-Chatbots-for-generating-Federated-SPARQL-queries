@@ -1,0 +1,19 @@
+PREFIX drugbank: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX kegg: <http://bio2rdf.org/kegg_vocabulary:>
+SELECT DISTINCT ?drug ?description ?molecularWeight ?compound ?reactionTitle ?chemicalEquation
+WHERE {
+  SERVICE <http://drugbank.bio2rdf.org/sparql> {
+    ?drug a drugbank:Drug ;
+          drugbank:type "small molecule" ;
+          drugbank:description ?description ;
+          drugbank:keggCompoundID ?compound ;
+          drugbank:averageMolecularWeight ?molecularWeight .
+  }
+  SERVICE <http://kegg.bio2rdf.org/sparql> {
+    ?enzyme kegg:compound ?compound ;
+            kegg:reaction ?reaction ;
+            kegg:title ?reactionTitle .
+    ?reaction kegg:equation ?chemicalEquation .
+  }
+  FILTER (?molecularWeight > 114)
+}

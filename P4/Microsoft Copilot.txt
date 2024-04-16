@@ -1,0 +1,21 @@
+PREFIX drugbank: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX kegg: <http://bio2rdf.org/kegg_vocabulary:>
+
+SELECT DISTINCT ?drug ?casNumber ?mass ?label ?biotransformation
+WHERE {
+  # Retrieve drugs affecting humans and mammals from DrugBank
+  SERVICE <http://drugbank.bio2rdf.org/sparql> {
+    ?drug a drugbank:Drug ;
+          drugbank:affectedOrganism "Humans and Mammals" ;
+          drugbank:casRegistryNumber ?casNumber ;
+          drugbank:mass ?mass ;
+          drugbank:label ?label ;
+          drugbank:biotransformation ?biotransformation .
+  }
+
+  # Retrieve corresponding mass information from KEGG
+  SERVICE <http://kegg.bio2rdf.org/sparql> {
+    ?keggDrug kegg:mass ?mass .
+    FILTER (STR(?keggDrug) = ?casNumber)
+  }
+}

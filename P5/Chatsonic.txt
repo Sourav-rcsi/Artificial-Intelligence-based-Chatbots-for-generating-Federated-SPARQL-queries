@@ -1,0 +1,19 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT ?drugLabel ?description ?molecularWeight ?compound ?reactionTitle ?chemicalEquation
+WHERE {
+  SERVICE <http://drugbank.bio2rdf.org/sparql> {
+    ?drug a <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#drug> ;
+          rdfs:label ?drugLabel ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#description> ?description ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#molecularWeight> ?molecularWeight ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#type> "small molecule"@en ;
+          <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#keggCompoundID> ?compound .
+    FILTER(?molecularWeight <= 114)
+  }
+  SERVICE <http://kegg.bio2rdf.org/sparql> {
+    ?enzyme a <http://bio2rdf.org/kegg_vocabulary:Enzyme> ;
+            <http://bio2rdf.org/kegg_vocabulary:xSubstrate> ?compound ;
+            rdfs:label ?reactionTitle ;
+            <http://bio2rdf.org/kegg_vocabulary:equation> ?chemicalEquation .
+  }
+}

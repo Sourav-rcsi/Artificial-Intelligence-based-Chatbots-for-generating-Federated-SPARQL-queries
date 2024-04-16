@@ -1,0 +1,4 @@
+SELECT DISTINCT ?drug
+WHERE {
+  ?drug a <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank#drug>
+}

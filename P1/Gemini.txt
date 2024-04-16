@@ -1,0 +1,7 @@
+PREFIX drugbank: <http://drugbank.openbioinformatics.org/resource/>
+
+SELECT DISTINCT ?drug_name
+WHERE {
+  ?drug a drugbank:Drug .
+  ?drug drugbank:name ?drug_name .
+}

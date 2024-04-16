@@ -1,0 +1,38 @@
+PREFIX drugbank: <http://drugbank.openbioinformatics.org/resource/>
+PREFIX kegg: <http://identifiers.org/kegg/>
+PREFIX chebi: <http://purl.obolibrary.org/obo/CHEBI/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX external: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?drug_name ?drug_description ?cas_number ?mass ?mass_unit
+WHERE {
+  # Find drugs affecting humans and mammals in DrugBank
+  ?drug a drugbank:Drug .
+  ?drug drugbank:name ?drug_name .
+  OPTIONAL { ?drug rdfs:description ?drug_description }  # Optional for description
+  FILTER (
+    EXISTS { ?drug drugbank:organism [ drugbank:organism-name "Homo sapiens" ] }
+    OR
+    EXISTS { ?drug drugbank:organism [ drugbank:organism-name ?organism_name ] }
+    FILTER (CONTAINS(LCASE(str(?organism_name)), "mammal"))
+  )
+  
+  # Retrieve CAS registry number
+  ?drug drugbank:xrefs ?drugbank_xref .
+  FILTER (CONTAINS(str(?drugbank_xref), "CHEBI:"))
+  BIND(REPLACE(str(?drugbank_xref), ".*CHEBI:", "") AS ?cas_number)
+  
+  # Find drug entry in KEGG with CAS number
+  BIND (chebi:CHEBI?cas_number AS ?chebi_id) .
+  ?kegg_drug kegg:chebi ?chebi_id .
+  
+  # Find mass information for the drug in KEGG
+  OPTIONAL {
+    ?kegg_drug kegg:inchiKey ?inchikey .
+    BIND (CONCAT("http://pubchem.ncbi.nlm.nih.gov/rest/v2/inchikey/", ?inchikey, "/property/MolecularWeight") AS ?mass_url)
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". wikibase:apiEndpoint ?mass_url . wikibase:return ?mass_data . 
+      BIND (bif:substring(str(?mass_data), bif:indexOf(str(?mass_data), xsd:decimal) + xs:decimal(length("xsd:decimal"))) AS ?mass)
+      BIND (REPLACE(str(?mass_data), "^.*xsd:string \"(.*?)\".*$", "$1") AS ?mass_unit)
+    }
+  }
+}

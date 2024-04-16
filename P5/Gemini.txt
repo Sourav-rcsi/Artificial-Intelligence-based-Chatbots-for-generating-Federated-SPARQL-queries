@@ -1,0 +1,35 @@
+PREFIX drugbank: <http://drugbank.openbioinformatics.org/resource/>
+PREFIX kegg: <http://identifiers.org/kegg/>
+PREFIX kegg-compound: <http://identifiers.org/kegg/compound/>
+PREFIX kegg-enzyme: <http://identifiers.org/kegg/enzyme/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?drug_name ?drug_description ?molecular_weight ?compound ?reaction_title ?reaction_equation
+WHERE {
+  # Find small molecule drugs in Drugbank
+  ?drug a drugbank:Drug .
+  ?drug a drugbank:SmallMolecule .  # Filter for small molecule drugs
+  ?drug drugbank:name ?drug_name .
+  OPTIONAL { ?drug rdfs:description ?drug_description }  # Optional for description
+  
+  # Retrieve KEGG compound ID for the drug
+  ?drug drugbank:xrefs ?drugbank_xref .
+  FILTER (CONTAINS(str(?drugbank_xref), "KEGG:"))
+  BIND(REPLACE(str(?drugbank_xref), ".*KEGG:", "") AS ?kegg_compound_id)
+  BIND (kegg:C?kegg_compound_id AS ?compound) .  # Replace C with actual prefix if needed
+  
+  # Find enzyme entries with the KEGG compound in KEGG 
+  ?enzyme kegg-enzyme:compound ?compound .
+  ?enzyme kegg-enzyme:reaction ?reaction .
+  
+  # Get reaction title and equation 
+  ?reaction kegg-enzyme:reactionName ?reaction_title .
+  ?reaction kegg-enzyme:equation ?reaction_equation .
+  
+  # Optional filter for drugs with MW > 114
+  OPTIONAL {
+    ?drug drugbank:molecularWeight ?molecular_weight_value .
+    BIND (AVG(?molecular_weight_value) AS ?molecular_weight)
+    FILTER (?molecular_weight > 114)
+  }
+}

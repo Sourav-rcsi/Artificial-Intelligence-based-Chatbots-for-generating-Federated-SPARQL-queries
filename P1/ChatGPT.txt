@@ -1,0 +1,3 @@
+PREFIX db: <http://bio2rdf.org/drugbank_vocabulary:>
+SELECT DISTINCT ?drug
+WHERE {   ?drug a db:Drug . }
